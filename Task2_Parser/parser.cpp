@@ -11,15 +11,16 @@ Parser:: ~Parser(){
 }
 
 vector<AST_node*> *Parser::parse_AST(){
-    next_tok = Lexer::see_next_token().t_id 
-    while(next_tok != Token_ID::EOF_TOK){
+    while(Lexer::see_next_token().t_id != Token_ID::EOF_TOK){
+        //setting current token to be the next token from Lexer class
         current_tok = Lexer::return_next_token();
 
-        AST->push_back(parse_statement());
-
-        next_tok = Lexer::see_next_token().t_id 
+        //parsing the statement
+        AST->push_back(parse_statement()); 
     }  
-   return AST;
+
+    //returning AST
+    return AST;
 }
 
 AST_node_statement *Parser::parse_statement(){
@@ -59,6 +60,33 @@ AST_node_statement *Parser::parse_statement(){
     }
 }
 
+AST_node_factor *Parser::parse_factor(){
+    if(current_tok.t_id == bool_literal_TOK || current_tok.t_id == int_literal_TOK 
+    || current_tok.t_id == float_literal_TOK || current_tok.t_id == char_literal_TOK){
+        //calling function to parse literal
+        return parse_literal();
+    }else if(current_tok.t_id == identifier_TOK){
+        if(Lexer::see_next_token().lexeme == "("){
+            //calling function to parse function call
+            return parse_function_call();
+        }else{
+            //calling function to parse identifier
+            return parse_identifier();
+        }
+    }else if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
+        //calling function to parse sub_expression
+        return parse_sub_expression();
+    }else if((current_tok.t_id == additive_op_TOK && current_tok.lexeme == "-") || (current_tok.t_id == keyword_TOK && current_tok.lexeme == "not")){
+        //calling function to parse unary
+        return parse_unary();
+    }else{
+         //otherwise returning error
+        cout << "Error at line: " << Lexer::line_index << ". Expected factor!" <<endl;
+        exit(1);
+    }
+}
+
+//parsing factors:
 
 //parsing literals
 AST_node_literal *Parser::parse_literal(){
@@ -182,7 +210,8 @@ AST_unary *Parser::parse_unary(){
 }
 
 
-//parsing expressions
+//parsing expressions:
+
 AST_actual_params *Parser::parse_actual_params(vector<AST_node_expression*> *actual_params){
     //parsing the parameter and adding it to the vector
     actual_params->push_back(parse_expression());
@@ -284,7 +313,8 @@ AST_expression *Parser::parse_expression(){
 }
 
 
-//parsing operators
+//parsing operators:
+
 AST_additive_operator *Parser::parse_additive_operator(){
     if (current_tok.t_id == additive_op_TOK){
         if (current_tok.lexeme == "+"){
@@ -378,7 +408,8 @@ AST_unary_operator *Parser::parse_unary_operator(){
 }
 
 
-//parsing statements
+//parsing statements:
+
 AST_variable_declaration *Parser::parse_variable_decl(){
     AST_identifier *identifier;
     AST_type *type;
@@ -741,7 +772,8 @@ AST_block *Parser::parse_block(){
 }
 
 
-//parsing others
+//parsing others:
+
 AST_type *Parser::parse_type(){
     //checking if the current token is a keyword
     if(current_tok.t_id == keyword_TOK){
@@ -824,32 +856,5 @@ AST_formal_params *Parser::parse_formal_params(vector<AST_formal_param*> *f_para
             cout << "Error at line: " << Lexer::line_index << ". Expected formal parameter!" <<endl;
             exit(1);
         }
-    }
-}
-
-
-AST_node_factor *Parser::parse_factor(){
-    if(current_tok.t_id == bool_literal_TOK || current_tok.t_id == int_literal_TOK 
-    || current_tok.t_id == float_literal_TOK || current_tok.t_id == char_literal_TOK){
-        //calling function to parse literal
-        return parse_literal();
-    }else if(current_tok.t_id == identifier_TOK){
-        if(Lexer::see_next_token().lexeme == "("){
-            //calling function to parse function call
-            return parse_function_call();
-        }else{
-            //calling function to parse identifier
-            return parse_identifier();
-        }
-    }else if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
-        //calling function to parse sub_expression
-        return parse_sub_expression();
-    }else if((current_tok.t_id == additive_op_TOK && current_tok.lexeme == "-") || (current_tok.t_id == keyword_TOK && current_tok.lexeme == "not")){
-        //calling function to parse unary
-        return parse_unary();
-    }else{
-         //otherwise returning error
-        cout << "Error at line: " << Lexer::line_index << ". Expected factor!" <<endl;
-        exit(1);
     }
 }
