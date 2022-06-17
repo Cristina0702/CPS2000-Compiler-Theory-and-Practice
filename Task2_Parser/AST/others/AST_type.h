@@ -10,7 +10,8 @@ enum class Type{
     Float,
     Int,
     Bool,
-    Char
+    Char,
+    None
 };
 
 class AST_type: public AST_node{

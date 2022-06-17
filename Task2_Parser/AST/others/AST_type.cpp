@@ -17,9 +17,11 @@ string AST_type::toString(){
         return "bool";
     }else if(type == Type::Char){
         return "char";
+    }else if(type == Type::None){
+        return "";
     }
 }
 
 void AST_type::accept(Visitor *Visitor){
-    visitor->visit(this)
+    visitor->visit(this);
 }

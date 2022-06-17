@@ -95,21 +95,193 @@ AST_identifier *Parser::parse_identifier(){
     }
 }
 
-AST_function_call *Parser::parse_function_call(){}
+AST_function_call *Parser::parse_function_call(){
+    AST_identifier *identifier;
+    AST_actual_params *actual_params;
 
-AST_sub_expression *Parser::parse_sub_expression(){}
+    //parsing identifier
+    identifier = parse_identifier();
 
-AST_unary *Parser::parse_unary(){}
+    //setting current_tok to be the next token
+    current_tok = Lexer::return_next_token();
+
+    //checking for (
+    if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
+        vector<AST_node_expression*> *actual_param = new vector<AST_node_expression*>;
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")"){
+            //creating new AST_actual_params object from actual_param and assigning it to actual_params
+            actual_params = new AST_actual_params(actual_param);
+
+            //returning new function call
+            return new AST_function_call(identifier, actual_params);
+        }else{
+            //there are remaining actual parameters to be parsed
+            //parsing the actual param
+            parse_actual_params(actual_param);
+
+            //setting current_tok to be the next token
+            current_tok = Lexer::return_next_token();
+
+            if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")")){
+                //otherwise returning error
+                cout << "Error at line: " << Lexer::line_index << ". Expected '('!" <<endl;
+                exit(1);
+            }
+
+            //creating new AST_actual_params object from actual_param and assigning it to actual_params
+            actual_params = new AST_actual_params(actual_param);
+
+            //returning new function call
+            return new AST_function_call(identifier, actual_params);
+        }
+    }else{
+        //otherwise returning error
+        cout << "Error at line: " << Lexer::line_index << ". Expected '('!" <<endl;
+        exit(1);
+    }
+}
+
+AST_sub_expression *Parser::parse_sub_expression(){
+    AST_node_expression *expr;
+
+    //setting current_tok to be the next token to skip ( and get expression
+    current_tok = Lexer::return_next_token();
+
+    //parsing expression
+    expr = parse_expression();
+
+    //setting current_tok to be the next token
+    current_tok = Lexer::return_next_token();
+
+    //checking for )
+    if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")"){
+        return new AST_sub_expression(expr);
+    }else{
+        //otherwise returning error
+        cout << "Error at line: " << Lexer::line_index << ". Expected ')'!" <<endl;
+        exit(1);
+    }
+}
+
+AST_unary *Parser::parse_unary(){
+    AST_unary_operator *u_op;
+    AST_node_expression *expr;
+
+    //parsing unary operator
+    u_op = parse_unary_operator();
+    
+    //setting current_tok to be the next token
+    current_tok = Lexer::return_next_token();
+
+    //parsing expression
+    expr = parse_expression();
+
+    return new AST_unary(u_op, expr);
+}
 
 
 //parsing expressions
-AST_actual_params *Parser::parse_actual_params(){}
+AST_actual_params *Parser::parse_actual_params(vector<AST_node_expression*> *actual_params){
+    //parsing the parameter and adding it to the vector
+    actual_params->push_back(parse_expression());
 
-AST_term *Parser::parse_term(){}
+    //checking if the next token is a comma
+    if(Lexer::see_next_token().lexeme == ","){
+        //consuming the token since its a comma
+        Lexer::return_next_token();
 
-AST_simple_expression *Parser::parse_simple_expression(){}
+        if(Lexer::see_next_token().lexeme == ")"){
+            //returning error
+            cout << "Error at line: " << Lexer::line_index << ". Expected actual parameter!" <<endl;
+            exit(1);
+        }
 
-AST_expression *Parser::parse_expression(){}
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //recalling the function to parse the remaining actual parameters
+        parse_actual_params(actual_params);
+    }else if(Lexer::see_next_token().lexeme == ")"){
+        return new AST_actual_params(actual_params);
+    }
+}
+
+AST_term *Parser::parse_term(){
+    AST_node_expression *factor;
+    factor = parse_factor();
+
+    if(Lexer::see_next_token.t_id == multiplicative_op_TOK){
+        AST_multiplicative_operator *mult_op;
+        AST_node_expression *factor2;
+
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //parsing multiplicative operator
+        mult_op = parse_multiplicative_operator();
+
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //recalling function to parse second factor
+        factor2 = parse_term();
+
+        return new AST_term(factor, mult_op, factor2);
+    }
+}
+
+AST_simple_expression *Parser::parse_simple_expression(){
+    AST_node_expression *term;
+    //parsing term
+    term = parse_term();
+
+    if(Lexer::see_next_token().t_id == additive_op_TOK){
+        AST_additive_operator *add_op;
+        AST_node_expression *term2;
+
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //parsing additive operator
+        add_op = parse_additive_operator();
+        
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //recalling function to parse second term
+        term2 = parse_simple_expression();
+        
+        //returning new simple expression
+        return new AST_simple_expression(term, add_op, term2);
+    }else{
+        //if there is only 1 term
+        return term;
+    }
+}
+
+AST_expression *Parser::parse_expression(){
+    AST_node_expression *s_expr;
+    //parsing simple expression
+    s_expr = parse_simple_expression();
+
+    if(Lexer::see_next_token().t_id == relational_op_TOK){
+        AST_relational_operator *rel_op;
+        AST_node_expression *s_expr2;
+
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //parsing relational operator
+        rel_op = parse_relational_operator();
+        
+        //setting current_tok to be the next token
+        current_tok = Lexer::return_next_token();
+        //recalling function to parse second simple expression
+        s_expr2 = parse_expression();
+        
+        //returning new expression
+        return new AST_expression(s_expr, rel_op, s_expr2);
+    }else{
+        //if there is only 1 expression
+        return s_expr;
+    }
+}
 
 
 //parsing operators
@@ -340,12 +512,6 @@ AST_for *Parser::parse_for(){
     AST_assignment *assignment;
     AST_block *block;
 
-    // //getting the expression
-    // current_tok = Lexer::return_next_token();
-
-    // //parsing expression
-    // expr = parse_expression();
-
     //setting current_tok to be the next token
     current_tok = Lexer::return_next_token();
 
@@ -366,7 +532,7 @@ AST_for *Parser::parse_for(){
     }else{
         //if variable declaration is not found
         //create empty var declaration
-        var_decl = new vector<AST_variable_declaration*>;        
+        var_decl = new AST_variable_declaration(new AST_identifier(""), new AST_type(Type::None), new AST_int(-1));        
     }
 
     //setting current_tok to be the next token
@@ -591,6 +757,9 @@ AST_type *Parser::parse_type(){
         }else if(current_tok.lexeme == "char"){
             //returning type char
             return new AST_type(Type::Char);
+        }else if(current_tok.lexeme == ""){
+            //returning type none
+            return new AST_type(Type::None);
         }else{
             //otherwise returning error
             cout << "Error at line: " << Lexer::line_index << ". Expected type!" <<endl;
@@ -655,5 +824,32 @@ AST_formal_params *Parser::parse_formal_params(vector<AST_formal_param*> *f_para
             cout << "Error at line: " << Lexer::line_index << ". Expected formal parameter!" <<endl;
             exit(1);
         }
+    }
+}
+
+
+AST_node_factor *Parser::parse_factor(){
+    if(current_tok.t_id == bool_literal_TOK || current_tok.t_id == int_literal_TOK 
+    || current_tok.t_id == float_literal_TOK || current_tok.t_id == char_literal_TOK){
+        //calling function to parse literal
+        return parse_literal();
+    }else if(current_tok.t_id == identifier_TOK){
+        if(Lexer::see_next_token().lexeme == "("){
+            //calling function to parse function call
+            return parse_function_call();
+        }else{
+            //calling function to parse identifier
+            return parse_identifier();
+        }
+    }else if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
+        //calling function to parse sub_expression
+        return parse_sub_expression();
+    }else if((current_tok.t_id == additive_op_TOK && current_tok.lexeme == "-") || (current_tok.t_id == keyword_TOK && current_tok.lexeme == "not")){
+        //calling function to parse unary
+        return parse_unary();
+    }else{
+         //otherwise returning error
+        cout << "Error at line: " << Lexer::line_index << ". Expected factor!" <<endl;
+        exit(1);
     }
 }
