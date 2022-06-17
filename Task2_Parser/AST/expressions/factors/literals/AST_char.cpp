@@ -2,8 +2,8 @@
 
 #include "../../../../../Tasks3_4_5_Visitors/visitor.h"
 
-AST_char::AST_char(char char_val){
-    this->char_val = char_val;
+AST_char::AST_char(string val){
+    this->val = val;
 }
 
 void AST_char::accept(Visitor *visitor){

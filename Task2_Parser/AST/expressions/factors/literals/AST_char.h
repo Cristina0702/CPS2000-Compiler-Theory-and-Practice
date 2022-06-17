@@ -1,12 +1,16 @@
 #pragma once
 
+#include <iostream>
+
 #include "../AST_node_literal.h"
+
+using namespace std;
 
 class AST_char: public AST_node_literal{
     public:
-        char char_val;
+        string val;
 
-        explicit AST_char(char char_val);
+        explicit AST_char(string val);
         ~AST_char() = default;
 
         void accept(Visitor *visitor) override;
