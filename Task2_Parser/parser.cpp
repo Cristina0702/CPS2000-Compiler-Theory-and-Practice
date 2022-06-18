@@ -754,7 +754,7 @@ AST_function_declaration *Parser::parse_function_decl(){
 
             if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")")){
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected open bracket!" <<endl;
+                cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
                 return nullptr;
             }
         }
