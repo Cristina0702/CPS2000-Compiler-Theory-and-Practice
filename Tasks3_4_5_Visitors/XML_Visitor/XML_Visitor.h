@@ -11,7 +11,11 @@ class XML_Visitor: public Visitor{
         string indentation;
     
     public:
+        //constructor
         XML_Visitor();
+
+        //to visit every node in the AST
+        void visit_AST(vector<AST_node*> *AST);
         
         //literals
         void visit(AST_float *AST_node) override;

@@ -3,6 +3,16 @@
 XML_Visitor::XML_Visitor(){
     indentation = "";
 }
+
+void XML_Visitor::visit_AST(vector<AST_node*> *AST){
+    cout << "<Abstract_Syntax_Tree>" <<endl;
+    indentation = indentation + "\t";
+    for (auto const &child: *AST){
+        child->accept(this);
+    }
+    indentation.pop_back();
+    cout << "</Abstract_Syntax_Tree>" << endl;
+}
         
 //literals
 void XML_Visitor::visit(AST_float *AST_node) {
