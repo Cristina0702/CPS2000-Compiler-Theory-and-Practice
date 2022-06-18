@@ -154,7 +154,7 @@ AST_function_call *Parser::parse_function_call(){
 
             if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")")){
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected '('!" <<endl;
+                cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
                 return nullptr;
             }
 
