@@ -85,7 +85,7 @@ void XML_Visitor::visit(AST_expression *AST_node) {
 void XML_Visitor::visit(AST_actual_params *AST_node) {
     cout << indentation << "<Actual_Params>" << endl;
     indentation = indentation + "\t";
-    for(AST_AST_node_expression *p: *AST_node->actual_params){
+    for(AST_node_expression *p: *AST_node->actual_params){
         p->accept(this);
     }
     indentation.pop_back();
@@ -180,7 +180,7 @@ void XML_Visitor::visit(AST_function_declaration *AST_node) {
 void XML_Visitor::visit(AST_block *AST_node) {
     cout << indentation << "<Block>" << endl;
     indentation = indentation + "\t";
-    for(AST_AST_node_statement *p: *AST_node->block){
+    for(AST_node_statement *p: *AST_node->block){
         p->accept(this);
     }
     indentation.pop_back();
