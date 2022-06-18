@@ -47,7 +47,8 @@ class Variable{
 
         string toString(){
             string s;
-
+            
+            //appending the type to the string
             if(value_type == Type::Float){
                 s = s + "Float";
             }else if (value_type == Type::Int){
@@ -59,5 +60,43 @@ class Variable{
             }
 
             s = s + " ";
+
+            //if the variable is a function
+            if(var_type == Variable_Type::FUNC){
+                //appending to string
+                s = s + "Function";
+
+                s = s + "\t(";
+                
+                //getting the size of the function's parameters
+                int params_size = params_type.size();
+
+                //looping through the function's parameters 
+                //and appending the type to the string
+                for(int i = 0; i < params_size; i++){
+                    if(params_type.at(i) == Type::Float){
+                        s = s + "Float";
+                    }else if(params_type.at(i) == Type::Int){
+                        s = s + "Int";
+                    }else if(params_type.at(i) == Type::Bool){
+                        s = s + "Bool";
+                    }else if(params_type.at(i) == Type::Char){
+                        s = s + "Char";
+                    }
+                    
+                    //adding a comma between each type
+                    if(i != params_size-1){
+                        s = s + ", ";
+                    }
+                    //addign the close bracket to the string 
+                    s = s + ")";
+                }
+            }else{
+                //if the variable is a variable with a value
+                s = s + "Variable";
+            }
+
+            //returning the string
+            return s;
         }
 };
