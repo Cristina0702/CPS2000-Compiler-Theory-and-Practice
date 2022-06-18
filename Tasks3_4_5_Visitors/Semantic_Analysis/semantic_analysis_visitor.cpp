@@ -77,8 +77,109 @@ void SA_Visitor::visit(AST_unary *AST_node) {
 } //CHECK
 
 //expressions
-void SA_Visitor::visit(AST_term *AST_node) {}
-void SA_Visitor::visit(AST_simple_expression *AST_node) {}
+void SA_Visitor::visit(AST_term *AST_node) {
+    Val_Type t1;
+    Val_Type t2;
+
+    AST_node->factor1->accept(this);
+    //getting factor 1 type
+    t1 = current_type;
+
+    AST_node->factor2->accept(this);
+    //getting factor 2 type
+    t2 = current_type;
+
+    if(t1 == t2){
+        //if both term types are the same
+        string e_op;
+
+        e_op = AST_node->multi_op->toString();
+
+        if(e_op == "*"){
+            //if operator is *
+            if(t1 == Float){
+                //setting current type to be float as float * float = float
+                current_type = Float;
+            }else if(t1 == Int){
+                //setting current type to be int as int * int = int
+                current_type = Int;
+            }else{
+                //returning error
+                cout << "Error: Operator: " << e_op << " can be applied to float and int variables only!" << endl;
+                exit(1);
+            }
+        }else if(e_op == "/"){
+            //if operator is /
+            if(t1 != Bool){
+                //setting current type to be Float
+                current_type = Float;
+            }else{
+                //returning error
+                cout << "Error: Operator: " << e_op << " can be applied to float and int variables only!" << endl;
+                exit(1);
+            }
+        }else if(e_op == "and"){
+            //if the operator is 'and'
+            if(t1 == Bool){
+                //setting current type to be Bool
+                current_type = Bool;
+            }else{
+                //returning error
+                cout << "Error: Operator: " << e_op << " can be applied to bool variables only!" << endl;
+                exit(1);
+            }
+        }
+    }else{
+        //returning error
+        cout << "Error: Factors must have the same type!" << endl;
+        exit(1);
+    }
+}
+
+void SA_Visitor::visit(AST_simple_expression *AST_node) {
+    Val_Type t1;
+    Val_Type t2;
+
+    AST_node->term1->accept(this);
+    //getting term 1 type
+    t1 = current_type;
+
+    AST_node->term2->accept(this);
+    //getting term 2 type
+    t2 = current_type;
+
+    if(t1 == t2){
+        //if both term types are the same
+        string e_op;
+
+        e_op = AST_node->add_op->toString();
+
+        if(e_op == "+" || e_op == "-"){
+            if(t1 != Bool){
+                //setting current type to be equal to t1's type
+                current_type = t1;
+            }else{
+                //returning error
+                cout << "Error: Operator: " << e_op << " can be applied to float and int variables only!" << endl;
+                exit(1);
+            }
+        }else if(e_op == "or"){
+            //if the operator is 'or'
+            if(t1 == Bool){
+                //setting current type to be Bool
+                current_type = Bool;
+            }else{
+                //returning error
+                cout << "Error: Operator: " << e_op << " can be applied to bool variables only!" << endl;
+                exit(1);
+            }
+        }
+    }else{
+        //returning error
+        cout << "Error: Terms must have the same type!" << endl;
+        exit(1);
+    }
+}
 
 void SA_Visitor::visit(AST_expression *AST_node) {
     Val_Type t1;
@@ -103,6 +204,7 @@ void SA_Visitor::visit(AST_expression *AST_node) {
             cout << "Error: Operator: " << e_op << " can be applied to float and int variables only!" << endl;
             exit(1);
         }else{
+            //setting current type to be Bool
             current_type = Bool;
         }
     }else{
