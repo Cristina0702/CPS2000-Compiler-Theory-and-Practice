@@ -28,7 +28,7 @@ class SA_Visitor: public Visitor{
         ~SA_Visitor();
 
         //to visit every node in the AST
-        //void visit_AST(vector<AST_node*> *AST);
+        void visit_AST(vector<AST_node*> *AST);
         
         //literals
         void visit(AST_float *AST_node) override;

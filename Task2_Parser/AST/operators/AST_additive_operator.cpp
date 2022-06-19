@@ -12,7 +12,7 @@ string AST_additive_operator::toString() {
     } else if(add_op == Additive_Operators::Subtraction) {
         return "-";
     } else if (add_op == Additive_Operators::OR) {
-        return "OR";
+        return "or";
     }
 }
 

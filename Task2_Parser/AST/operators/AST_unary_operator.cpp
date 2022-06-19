@@ -12,7 +12,7 @@ string AST_unary_operator::toString() {
     if (u_op == Unary_Operators::Subtraction) {
         return "-";
     } else if (u_op == Unary_Operators::NOT) {
-        return "NOT";
+        return "not";
     }
 }
 

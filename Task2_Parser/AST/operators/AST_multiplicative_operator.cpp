@@ -14,7 +14,7 @@ string AST_multiplicative_operator::toString() {
     } else if(mult_op == Multiplicative_Operators::Division) {
         return "/";
     } else if (mult_op == Multiplicative_Operators::AND) {
-        return "AND";
+        return "and";
     }
 }
 
