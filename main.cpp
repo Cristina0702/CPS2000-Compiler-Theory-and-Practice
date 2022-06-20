@@ -1,25 +1,14 @@
-#pragma once
+#include "Task1_Table-driven_Lexer/lexer.h"
+#include "Task2_Parser/parser.h"
+#include "Tasks3_4_5_Visitors/XML_Visitor/XML_Visitor.h"
+#include "Tasks3_4_5_Visitors/Semantic_Analysis/semantic_analysis_visitor.h"
 
-#include <iostream>
+using namespace std;
 
-struct Token{
-    token_id t_id;
-    std::string lexeme;
-};
- 
-enum token_id{        
-    int_literal_TOK,         
-    float_literal_TOK,
-    char_literal_TOK,  
-    identifier_TOK,
-    bool_literal_TOK,
-    equals_TOK,
-    relational_op_TOK,  
-    additive_op_TOK,
-    multiplicative_op_TOK,        
-    comment_TOK,     
-    keyword_TOK,       
-    punctuation_TOK,        
-    ERROR_TOK,           
-    EOF_TOK,            
-};
+int main(){
+    Lexer *lexer;
+    Parser *parser;
+
+    lexer = new Lexer();
+    parser = new Parser(lexer);
+}
