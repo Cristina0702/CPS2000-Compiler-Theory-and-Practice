@@ -4,8 +4,6 @@
 
 #include "../AST_node_operator.h"
 
-#include "../../../Tasks3_4_5_Visitors/visitor.h"
-
 using namespace std;
 
 enum class Additive_Operators{

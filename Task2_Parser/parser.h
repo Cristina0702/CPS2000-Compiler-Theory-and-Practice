@@ -53,15 +53,12 @@ class Parser{
     public:
         //constructor
         explicit Parser(Lexer *lexer);
+        // Parser();
 
         //class destructor
         ~Parser();
 
         vector<AST_node*> *parse_AST();
-
-        // void clear_AST(){
-        //     AST->clear();
-        // }
     
     private:
         Token current_tok;

@@ -16,4 +16,4 @@ class AST_function_declaration: public AST_node_statement{
         ~AST_function_declaration();
 
         void accept(Visitor *visitor) override;
-}
+};

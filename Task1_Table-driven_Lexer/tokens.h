@@ -4,13 +4,6 @@
 
 using namespace std;
 
-struct Token{
-    //to store the token type
-    Token_ID t_id;
-    //to store the token's contents
-    string lexeme;
-};
- 
 enum Token_ID{      
     //the token types
     bool_literal_TOK = 0, //S7
@@ -28,3 +21,11 @@ enum Token_ID{
     EOF_TOK = 12, //S22
     ERROR_TOK = 13,
 };
+
+struct Token{
+    //to store the token type
+    Token_ID t_id;
+    //to store the token's contents
+    string lexeme;
+};
+ 

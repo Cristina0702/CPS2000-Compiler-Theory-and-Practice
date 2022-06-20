@@ -1,4 +1,7 @@
-#include "states.h"
+#include <fstream>
+#include <sstream>
+#include <stack>
+
 #include "lexer.h"
 
 vector<char> Lexer::program;
@@ -71,6 +74,8 @@ int get_char_pos(char c_char){
     } else if(c_char == EOF){
         //if an end of file character is found
         return 16;
+    }else{
+        return -1;
     }
 }
 
