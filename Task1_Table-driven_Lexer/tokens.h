@@ -2,12 +2,17 @@
 
 #include <iostream>
 
+using namespace std;
+
 struct Token{
+    //to store the token type
     Token_ID t_id;
-    std::string lexeme;
+    //to store the token's contents
+    string lexeme;
 };
  
 enum Token_ID{      
+    //the token types
     bool_literal_TOK = 0, //S7
     int_literal_TOK = 1, //S1
     float_literal_TOK = 2, //S3

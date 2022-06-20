@@ -25,6 +25,7 @@ class SA_Visitor: public Visitor{
         //constructor
         SA_Visitor();
 
+        //destructor
         ~SA_Visitor();
 
         //to visit every node in the AST

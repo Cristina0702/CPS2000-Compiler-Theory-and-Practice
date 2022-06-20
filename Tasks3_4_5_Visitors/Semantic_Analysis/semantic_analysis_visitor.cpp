@@ -21,24 +21,30 @@ void SA_Visitor::visit_AST(vector<AST_node*> *AST){
 
 //literals
 void SA_Visitor::visit(AST_float *AST_node) {
+    //setting the current type to float
     current_type = Float;
 }
 
 void SA_Visitor::visit(AST_int *AST_node) {
+    //setting the current type to int
     current_type = Int;
 }
 
 void SA_Visitor::visit(AST_bool *AST_node) {
+    //setting the current type to bool
     current_type = Bool;
 }
 
 void SA_Visitor::visit(AST_char *AST_node) {
+    //setting the current type to char
     current_type = Char;
 }
 
 //factors
 void SA_Visitor::visit(AST_identifier *AST_node) {
+    //checking that the identifier is not a nullptr
     if(symbol_table->return_value(AST_node->identifier) != nullptr){
+        //getting the type of the identifier
         current_type = symbol_table->return_value(AST_node->identifier)->id_type;
     }else{
         //returning error
@@ -51,11 +57,15 @@ void SA_Visitor::visit(AST_function_call *AST_node) {
     vector<Value*> *params_type = new vector<Value*>;
 
     for(AST_node_expression* expr: *AST_node->actual_params->actual_params){
+        //calling the expression's visit function
+        //to check the expression's type
         expr->accept(this);
         params_type->push_back(new Value(current_type));
     }
 
+    //checking the identifier and params types
     if(symbol_table->check_function_call(AST_node->identifier->identifier, params_type)){
+        //getting the current type
         current_type = symbol_table->return_value(AST_node->identifier->identifier)->id_type;
     }else{
         //returning error
@@ -65,10 +75,14 @@ void SA_Visitor::visit(AST_function_call *AST_node) {
 }
 
 void SA_Visitor::visit(AST_sub_expression *AST_node) {
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
 }
 
 void SA_Visitor::visit(AST_unary *AST_node) {
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
 
     //checking if the operator is a 'not'
@@ -104,6 +118,7 @@ void SA_Visitor::visit(AST_term *AST_node) {
         //if both term types are the same
         string e_op;
 
+        //getting the operator's string value
         e_op = AST_node->multi_op->toString();
 
         if(e_op == "*"){
@@ -163,6 +178,7 @@ void SA_Visitor::visit(AST_simple_expression *AST_node) {
         //if both term types are the same
         string e_op;
 
+        //getting the operator's string value
         e_op = AST_node->add_op->toString();
 
         if(e_op == "+" || e_op == "-"){
@@ -208,6 +224,7 @@ void SA_Visitor::visit(AST_expression *AST_node) {
         //if both simple expression types are the same
         string e_op;
 
+        //getting the operator's string value
         e_op = AST_node->rel_op->toString();
 
         if(t1 == Bool && (e_op == "<" || e_op == ">")){
@@ -244,6 +261,9 @@ void SA_Visitor::visit(AST_variable_declaration *AST_node) {
         var_type = Char;
     }
 
+    
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
     
     //checking if the identifier type is the same as the expression type
@@ -265,12 +285,20 @@ void SA_Visitor::visit(AST_assignment *AST_node) {
     Val_Type var_t;
     Val_Type val_t;
 
+    
+    //calling the identifier's visit function
+    //to check the identifier's type
     AST_node->identifier->accept(this);
+    //storing the identifier's type
     var_t = current_type;
 
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expression->accept(this);
+    //storing the expression's type
     val_t = current_type;
 
+    //comparing the expression and identifier's types to make sure that they are the same
     if(var_t != val_t){
         //returning error
         cout << "Error: Expression type does not match variable type!" << endl;
@@ -279,12 +307,20 @@ void SA_Visitor::visit(AST_assignment *AST_node) {
 }
 
 void SA_Visitor::visit(AST_print *AST_node) {
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
 }
 
 void SA_Visitor::visit(AST_if *AST_node) {
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
+
+    //checking if the expression is of type bool
     if(current_type == Bool){
+        //calling the if and else blocks' visit functions
+        //to check their types
         AST_node->if_block->accept(this);
         AST_node->else_block->accept(this);
     }else{
@@ -299,9 +335,13 @@ void SA_Visitor::visit(AST_for *AST_node) {
 
     //checking if variable declaration identifier is empty
     if(AST_node->var->identifier->identifier != ""){
+        //calling the variables's visit function
+        //to check the variable's type
         AST_node->var->accept(this);
     }
-
+    
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
 
     //setting expression type to be current type
@@ -310,21 +350,27 @@ void SA_Visitor::visit(AST_for *AST_node) {
     //checking that expression type is Bool
     if(expr_type != Bool){
         //returning error
-        cout << "Error: If statement expression must be of type bool!" << endl;
+        cout << "Error: For statement expression must be of type bool!" << endl;
         exit(1);
     }
 
     //checking if assignment identifier is empty
     if(AST_node->assignment->identifier->identifier != ""){
+        //calling the assignment's visit function
+        //to check the assignment's type
         AST_node->assignment->accept(this);
     }
 }
 
 void SA_Visitor::visit(AST_while *AST_node) {
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
 
     //checking that the current variable is of type bool
     if(current_type == Bool){
+        //calling the block's visit function
+        //to check the block's type
         AST_node->block->accept(this);
     }else{
         //returning error
@@ -334,6 +380,8 @@ void SA_Visitor::visit(AST_while *AST_node) {
 }
 
 void SA_Visitor::visit(AST_return *AST_node) {
+    //calling the expression's visit function
+    //to check the expression's type
     AST_node->expr->accept(this);
 }
 
@@ -342,7 +390,9 @@ void SA_Visitor::visit(AST_function_declaration *AST_node) {
     string func_type;
     vector<Value*> *params_type = new vector<Value*>;
 
+    //getting the identifier's value
     func_name = AST_node->identifier->identifier;
+    //getting the type
     func_type = AST_node->type->toString();
 
     //getting function return type
@@ -362,10 +412,15 @@ void SA_Visitor::visit(AST_function_declaration *AST_node) {
         params_type->push_back(new Value(AST_node->f_params->f_params->at(i)->type->toString()));
     }
 
+    //creating the method with the function type and parameters type
     Value *method = new Value(func_type, params_type);
+    //inserting the function name and method into the symbol table
     symbol_table->insert_variable(func_name, method);
+    //calling the block's visit function
+    //to check the block's type
     AST_node->block->accept(this);
 
+    //checking to make sure that the flag is true
     if(flag == true){
         //setting the flag back to false
         flag = false;
@@ -405,10 +460,13 @@ void SA_Visitor::visit(AST_block *AST_node) {
 
     //looping through the staements in the block
     for(AST_node_statement *statement: *AST_node->block){
+        //calling the statement's visit function
+        //to check the statement's type
         statement->accept(this);
 
         //checking the types
         if(typeid(AST_return) == typeid(*statement)){
+            //setting the flag to true
             flag = true;
             //checking function return type with current type
             if(return_type != current_type){

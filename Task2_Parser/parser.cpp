@@ -469,10 +469,13 @@ AST_variable_declaration *Parser::parse_variable_decl(){
     AST_identifier *identifier;
     AST_type *type;
     AST_node_expression *expr;
-
+    
+    //setting current_tok to be the next token
     current_tok = lexer.return_next_token();
+    //parsing the identifier
     identifier = parse_identifier();
 
+    //setting current_tok to be the next token
     current_tok = lexer.return_next_token();
 }
 
@@ -549,6 +552,7 @@ AST_if *Parser::parse_if(){
     //setting current_tok to be the next token
     current_tok = lexer.return_next_token();
 
+    //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         //setting current_tok to be the next token
         current_tok = lexer.return_next_token();
@@ -675,6 +679,7 @@ AST_while *Parser::parse_while(){
     //setting current_tok to be the next token
     current_tok = lexer.return_next_token();
 
+    //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         //setting current_tok to be the next token
         current_tok = lexer.return_next_token();
@@ -740,6 +745,7 @@ AST_function_declaration *Parser::parse_function_decl(){
     //setting current_tok to be the next token
     current_tok = lexer.return_next_token();
 
+    //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         vector<AST_formal_param*> *f_param = new vector<AST_formal_param*>;
         //setting current_tok to be the next token
@@ -758,6 +764,7 @@ AST_function_declaration *Parser::parse_function_decl(){
                 return nullptr;
             }
         }
+        //creating new AST_formal_params object
         f_params = new AST_formal_params(f_param);
 
         //setting current_tok to be the next token

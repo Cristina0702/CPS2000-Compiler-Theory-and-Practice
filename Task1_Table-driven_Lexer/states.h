@@ -12,13 +12,13 @@ using namespace std;
 
 
 struct State{
+    //to store the state id
     int state_id;
+    //to store whether the state is a final state or not
     bool final_state;
+    //to store the token type of the state
     Token_ID token_id;
 };
-
-bool final_state[NUM_STATES] = {false,true,false,true,false,false,true,true,true,true,true,true,
-                                false,true,true,false,true,false,false,true,true,true,true};
 
 int transition_table[NUM_STATES][ALPHABET_SIZE] = {
     //letter  digit  printable  \n  .  "  _  *  /  +  -  <  >  !  =  (|)|,|;|:|{|}  EOF     
@@ -49,16 +49,22 @@ int transition_table[NUM_STATES][ALPHABET_SIZE] = {
 
 class States{
     public:
+        //creating a states array with type struct State
         static State states[NUM_STATES];
 
         static void init_DFSA(){
-            std::set<int> final_states = {1,3,6,7,8,9,10,11,13,14,16,19,20,21,22};
+            //hardcoding the final state's ids
+            set<int> final_states = {1,3,6,7,8,9,10,11,13,14,16,19,20,21,22};
 
+            //looping according to the number of states
             for (int i = 0; i < NUM_STATES; i++){
+                //assigning the state id to the state
                 states[i].state_id = i;
+                //setting whether the state is a final state or not depending on if it's id is found int the final_states set.
                 states[i].final_state = final_states.find(i) != final_states.end();
             }
 
+            //hardcoding the token type of each state
             states[0].token_id = Token_ID::ERROR_TOK;
             states[1].token_id = Token_ID::int_literal_TOK;
             states[2].token_id = Token_ID::ERROR_TOK;

@@ -1,18 +1,23 @@
 #include "symbol_table.h"
 
 Symbol_Table::Symbol_Table(){
+    //creating the symbol table
     symbol_table = new vector<map<string, Value*>*>;
+    //opening the scope
     open_scope();
 }
 Symbol_Table::~Symbol_Table(){
+    //clearing the symbol table
     symbol_table->clear();
 }
 
 void Symbol_Table::open_scope(){
+    //adds a new map element at the end of the symbol table vector
     symbol_table->push_back(new map<string, Value*>);
 }
 
 void Symbol_Table::close_scope(){
+    //deleting the last element of the symbol table vector
     symbol_table->pop_back();
 }
 
@@ -59,6 +64,7 @@ int Symbol_Table::assign_variable(string identifier, Value *val){
         // else if(variable->id_type == Char){
         //     variable->char_val = val->char_val;
         // }
+        return 2;
 
     }else{
         //otherwise return -1
@@ -73,17 +79,18 @@ bool Symbol_Table::check_function_call(string identifier, vector<Value*> *params
     func = return_value(identifier);
 
     if(func != nullptr){
-
         if(func->f_params == nullptr){
             //returning error
             cout << "Error: No function parameters found!" << endl;
             return false;
         }else if(func->f_params->size() != params->size()){
+            //if sizes do not correspond to each other
             //returning error
             cout << "Error: Parameter mismatch!" << endl;
             return false;
         }
 
+        //looping to check that parameters correspond to each other
         for(int i=0; i < params->size(); i++){
             if(params->at(i)->id_type != func->f_params->at(i)->id_type){
                 //returning error

@@ -24,7 +24,9 @@ class Value{
 
         vector<Value*> *f_params;
 
+        //constructor
         Value(Val_Type id_type);
+        //destructor
         ~Value();
 
         Value(float float_val);

@@ -33,10 +33,13 @@ void Lexer::read_program(string filename){
 //returning the given character position
 int get_char_pos(char c_char){
     if (isalpha(c_char)){
+        // if a letter is found
         return 0;
     } else if (isdigit(c_char)){
+        //if a digit is found
         return 1;
     } else if (c_char == '\t' || (c_char > 32 && c_char < 126)){
+        //if a printable character is found
         return 2;
     } else if (c_char == '\n'){
         return 3;
@@ -63,8 +66,10 @@ int get_char_pos(char c_char){
     } else if (c_char == '='){
         return 14;
     } else if (c_char == '(' || c_char == ')' || c_char == ',' || c_char == ';' || c_char == ':' || c_char == '{' || c_char == '}'){
+        //if a punctuation character is found
         return 15;
     } else if(c_char == EOF){
+        //if an end of file character is found
         return 16;
     }
 }
@@ -186,7 +191,7 @@ Token Lexer::get_next_token(){
 
     } while (current_state != -1 && Lexer::char_index < program.size());
     
-    //looping while  the current state isn't final and the stack isn't empty
+    //looping while the current state isn't final and the stack isn't empty
     while (!States::states[current_state].final_state && !visited_states.empty()){
         //removing the last character froom the lexeme
         lexeme.pop_back();

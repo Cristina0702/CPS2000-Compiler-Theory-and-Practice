@@ -9,7 +9,9 @@ class Symbol_Table{
         vector<map<string, Value*>*> *symbol_table;
 
     public:
+        //constructor
         Symbol_Table();
+        //destructor
         ~Symbol_Table();
 
         void open_scope();

@@ -20,9 +20,9 @@ class Lexer{
     private:
         //vector to hold the program's file input
         static vector<char> Lexer::program; 
-        //function to get the position of the character from the transitive table
+        //function to get the position of the character from the transition table
         static int get_char_pos(char c_char);
-        //function to get the next state from the transititve table given the current state and character
+        //function to get the next state from the transition table given the current state and character
         static int get_next_state(int current_state, char c_char);
         //function to check if the given lexeme is a keyword
         static bool check_if_keyword(string lexeme);
