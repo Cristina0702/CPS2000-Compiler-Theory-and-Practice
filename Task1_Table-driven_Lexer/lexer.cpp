@@ -1,11 +1,10 @@
-#include <fstream>
-#include <sstream>
-#include <stack>
-
 #include "lexer.h"
 
 vector<char> Lexer::program;
 State States::states[NUM_STATES];
+
+int Lexer::char_index;
+int Lexer::line_index;
 
 void Lexer::read_program(string filename){
     ifstream fp;
@@ -16,9 +15,8 @@ void Lexer::read_program(string filename){
     //if the file cannot be open
     if (!fp.good()) {
         //printing error
-        ostringstream oss;
-        oss << "File: \"" << filename << "\" could not be opened!";
-        throw ifstream::failure(oss.str());
+        cout << "File: " << filename << " could not be opened!";
+        exit(1);
     }
 
     //getting file characters until EOF is reached
@@ -29,12 +27,14 @@ void Lexer::read_program(string filename){
     //when EOF is reached, closing the file
     fp.close();
 
+    cout << "File: " << filename << " was opened successfully!" <<endl;
+
     //adding an EOF character at the end of the vector
     Lexer::program.push_back(EOF);
 }
 
 //returning the given character position
-int get_char_pos(char c_char){
+int Lexer::get_char_pos(char c_char){
     if (isalpha(c_char)){
         // if a letter is found
         return 0;
@@ -88,7 +88,7 @@ int Lexer::get_next_state(int c_state, char c_char){
 }
 
 //checking if the given lexeme is a keyword
-bool check_if_keyword(string lex){
+bool Lexer::check_if_keyword(string lex){
     return (keywords.find(lex) != keywords.end());
 }
 
@@ -97,7 +97,7 @@ Token Lexer::see_next_token(){
     int t_char_index = Lexer::char_index;
     int t_line_index = Lexer::line_index;
 
-    //calling the get_next_token() function to get the next token
+    //calling the return_next_token() function to get the next token
     Token next_tok = return_next_token(); 
     
     //resetting the char and line index
@@ -240,4 +240,14 @@ void Lexer::set_cmd_code(string p_input) {
     }
     //pushing an EOF
     program.push_back(EOF);
+}
+
+int main(){
+    Lexer lexer;
+
+    string file = "testLexer.txt";
+
+    lexer.read_program(file);
+
+    States::init_DFSA();
 }
