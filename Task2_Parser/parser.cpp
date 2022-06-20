@@ -2,9 +2,11 @@
 
 using namespace std;
 
-Parser:: Parser(){
+Parser:: Parser(Lexer *lexer){
     //creating the AST
     AST = new vector<AST_node*>();
+    //assigning lexer object
+    this->lexer = lexer;
 }
 
 Parser:: ~Parser(){
@@ -14,14 +16,13 @@ Parser:: ~Parser(){
 
 vector<AST_node*> *Parser::parse_AST(){
     //looping until all the input program is parsed
-    while(lexer.see_next_token().t_id != Token_ID::EOF_TOK){
+    while(lexer->see_next_token().t_id != Token_ID::EOF_TOK){
         //setting current token to be the next token from Lexer class
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //parsing the statement and adding it to the AST
         AST->push_back(parse_statement()); 
     }  
-
     //returning the developed AST
     return AST;
 }
@@ -59,7 +60,7 @@ AST_node_statement *Parser::parse_statement(){
         return parse_block();
     }else{
         //returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected statement!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected statement!" <<endl;
         return nullptr;
     }
 }
@@ -70,7 +71,7 @@ AST_node_factor *Parser::parse_factor(){
         //calling function to parse literal
         return parse_literal();
     }else if(current_tok.t_id == identifier_TOK){
-        if(lexer.see_next_token().lexeme == "("){
+        if(lexer->see_next_token().lexeme == "("){
             //calling function to parse function call
             return parse_function_call();
         }else{
@@ -85,7 +86,7 @@ AST_node_factor *Parser::parse_factor(){
         return parse_unary();
     }else{
          //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected factor!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected factor!" <<endl;
         return nullptr;
     }
 }
@@ -103,7 +104,7 @@ AST_node_literal *Parser::parse_literal(){
             return new AST_bool(false);
         }else{
             //returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected boolean literal!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected boolean literal!" <<endl;
             return nullptr;
         }
     }else if(current_tok.t_id == int_literal_TOK){
@@ -117,7 +118,7 @@ AST_node_literal *Parser::parse_literal(){
         return new AST_char(current_tok.lexeme);
     }else{
         //returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected literal!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected literal!" <<endl;
         return nullptr;
     }
 }
@@ -128,7 +129,7 @@ AST_identifier *Parser::parse_identifier(){
         return new AST_identifier(current_tok.lexeme);
     }else{
         //returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected identifier!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected identifier!" <<endl;
         return nullptr;
     }
 }
@@ -141,13 +142,13 @@ AST_function_call *Parser::parse_function_call(){
     identifier = parse_identifier();
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         vector<AST_node_expression*> *actual_param = new vector<AST_node_expression*>;
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")"){
             //creating new AST_actual_params object from actual_param and assigning it to actual_params
             actual_params = new AST_actual_params(new vector<AST_node_expression*>);
@@ -160,11 +161,11 @@ AST_function_call *Parser::parse_function_call(){
             actual_params = parse_actual_params(actual_param);
 
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
 
             if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")")){
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+                cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
                 return nullptr;
             }
 
@@ -176,7 +177,7 @@ AST_function_call *Parser::parse_function_call(){
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected '('!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected '('!" <<endl;
         return nullptr;
     }
 }
@@ -185,13 +186,13 @@ AST_sub_expression *Parser::parse_sub_expression(){
     AST_node_expression *expr;
 
     //setting current_tok to be the next token to skip ( and get expression
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //parsing expression
     expr = parse_expression();
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for )
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")"){
@@ -199,7 +200,7 @@ AST_sub_expression *Parser::parse_sub_expression(){
         return new AST_sub_expression(expr);
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
         return nullptr;
     }
 }
@@ -212,7 +213,7 @@ AST_unary *Parser::parse_unary(){
     u_op = parse_unary_operator();
     
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //parsing expression
     expr = parse_expression();
@@ -234,34 +235,34 @@ AST_actual_params *Parser::parse_actual_params(vector<AST_node_expression*> *act
         actual_params->push_back(parse_expression());
     }else{
         //returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected actual parameter!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected actual parameter!" <<endl;
         return nullptr;
     }
 
     //checking if the next token is a comma
-    if(lexer.see_next_token().lexeme == ","){
+    if(lexer->see_next_token().lexeme == ","){
         //consuming the token since its a comma
-        lexer.return_next_token();
+        lexer->return_next_token();
 
-        if(lexer.see_next_token().lexeme == ")"){
+        if(lexer->see_next_token().lexeme == ")"){
             //returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
             return nullptr;
         }
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //recalling the function to parse the remaining actual parameters
         return parse_actual_params(actual_params);
-    }else if(lexer.see_next_token().lexeme == ")"){
+    }else if(lexer->see_next_token().lexeme == ")"){
         //consuming the token since its a )
-        lexer.return_next_token();
+        lexer->return_next_token();
 
         //returning new actual params
         return new AST_actual_params(actual_params);
     }else{
         //returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ',' or ')'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ',' or ')'!" <<endl;
         return nullptr;
     }
 }
@@ -278,30 +279,30 @@ AST_actual_params *Parser::parse_actual_params(vector<AST_node_expression*> *act
 //         actual_params->push_back(parse_expression());
 //     }else{
 //         //returning error
-//         cout << "Error at line: " << lexer.line_index << ". Expected actual parameter!" <<endl;
+//         cout << "Error at line: " << lexer->line_index << ". Expected actual parameter!" <<endl;
 //         return nullptr;
 //     }
 
 //     //checking if the next token is a comma
-//     if(lexer.see_next_token().lexeme == ","){
+//     if(lexer->see_next_token().lexeme == ","){
 //         //consuming the token since its a comma
-//         lexer.return_next_token();
+//         lexer->return_next_token();
 
-//         if(lexer.see_next_token().lexeme == ")"){
+//         if(lexer->see_next_token().lexeme == ")"){
 //             //returning error
-//             cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+//             cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
 //             return nullptr;
 //         }
 
 //         //setting current_tok to be the next token
-//         current_tok = lexer.return_next_token();
+//         current_tok = lexer->return_next_token();
 //         //recalling the function to parse the remaining actual parameters
 //         return parse_actual_params(actual_params);
-//     }else if(lexer.see_next_token().lexeme == ")"){
+//     }else if(lexer->see_next_token().lexeme == ")"){
 //         return new AST_actual_params(actual_params);
 //     }else{
 //         //returning error
-//         cout << "Error at line: " << lexer.line_index << ". Expected ','!" <<endl;
+//         cout << "Error at line: " << lexer->line_index << ". Expected ','!" <<endl;
 //         return nullptr;
 //     }
 // }
@@ -310,17 +311,17 @@ AST_node_expression *Parser::parse_term(){
     AST_node_expression *factor;
     factor = parse_factor();
 
-    if(lexer.see_next_token().t_id == multiplicative_op_TOK){
+    if(lexer->see_next_token().t_id == multiplicative_op_TOK){
         AST_multiplicative_operator *mult_op;
         AST_node_expression *factor2;
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing multiplicative operator
         mult_op = parse_multiplicative_operator();
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //recalling function to parse second factor
         factor2 = parse_term();
         
@@ -328,7 +329,7 @@ AST_node_expression *Parser::parse_term(){
         return new AST_term(factor, mult_op, factor2);
     }else{
         //consuming the token
-        //lexer.return_next_token();
+        //lexer->return_next_token();
         //returning factor
         return factor;
     }
@@ -339,17 +340,17 @@ AST_node_expression *Parser::parse_simple_expression(){
     //parsing term
     term = parse_term();
 
-    if(lexer.see_next_token().t_id == additive_op_TOK){
+    if(lexer->see_next_token().t_id == additive_op_TOK){
         AST_additive_operator *add_op;
         AST_node_expression *term2;
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing additive operator
         add_op = parse_additive_operator();
         
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //recalling function to parse second term
         term2 = parse_simple_expression();
         
@@ -366,17 +367,17 @@ AST_node_expression *Parser::parse_expression(){
     //parsing simple expression
     s_expr = parse_simple_expression();
 
-    if(lexer.see_next_token().t_id == relational_op_TOK){
+    if(lexer->see_next_token().t_id == relational_op_TOK){
         AST_relational_operator *rel_op;
         AST_node_expression *s_expr2;
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing relational operator
         rel_op = parse_relational_operator();
         
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //recalling function to parse second simple expression
         s_expr2 = parse_expression();
         
@@ -404,12 +405,12 @@ AST_additive_operator *Parser::parse_additive_operator(){
             return new AST_additive_operator(Additive_Operators::OR);
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected additive operator!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected additive operator!" <<endl;
             return nullptr;
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected additive operator!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected additive operator!" <<endl;
         return nullptr;
     }
 }
@@ -427,12 +428,12 @@ AST_multiplicative_operator *Parser::parse_multiplicative_operator(){
             return new AST_multiplicative_operator(Multiplicative_Operators::AND);
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected multiplicative operator!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected multiplicative operator!" <<endl;
             return nullptr;
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected multiplicative operator!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected multiplicative operator!" <<endl;
         return nullptr;
     }
 }
@@ -459,12 +460,12 @@ AST_relational_operator *Parser::parse_relational_operator(){
             return new AST_relational_operator(Relational_Operators::Greater_than_equal_to);
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected relational operator!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected relational operator!" <<endl;
             return nullptr;
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected relational operator!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected relational operator!" <<endl;
         return nullptr;
     }
 }
@@ -478,7 +479,7 @@ AST_unary_operator *Parser::parse_unary_operator(){
         return new AST_unary_operator(Unary_Operators::NOT);
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected unary operator!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected unary operator!" <<endl;
         return nullptr;
     }
 }
@@ -492,34 +493,34 @@ AST_variable_declaration *Parser::parse_variable_decl(){
     AST_node_expression *expr;
     
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
     //parsing the identifier
     identifier = parse_identifier();
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for :
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ":"){
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //parsing type
         type = parse_type();
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //checking for =
         if(current_tok.t_id == equals_TOK){
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
 
             //parsing expression
             expr = parse_expression();
 
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
 
             //checking for ;
             if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ";"){
@@ -527,17 +528,17 @@ AST_variable_declaration *Parser::parse_variable_decl(){
                 return new AST_variable_declaration(identifier, type, expr);
             }else{
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected ';'!" <<endl;
+                cout << "Error at line: " << lexer->line_index << ". Expected ';'!" <<endl;
                 return nullptr;
             }
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected '='!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected '='!" <<endl;
             return nullptr;
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ':'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ':'!" <<endl;
         return nullptr;
     }
 }
@@ -551,17 +552,17 @@ AST_assignment *Parser::parse_assignment(){
         identifier = parse_identifier();
     
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //checking for =
         if(current_tok.t_id == equals_TOK){
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();  
+            current_tok = lexer->return_next_token();  
             //parsing expression
             expr = parse_expression();
             
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();  
+            current_tok = lexer->return_next_token();  
             
             //checking for ;
             if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ";"){
@@ -569,17 +570,17 @@ AST_assignment *Parser::parse_assignment(){
                 return new AST_assignment(identifier, expr);
             }else{
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected ';'!" <<endl;
+                cout << "Error at line: " << lexer->line_index << ". Expected ';'!" <<endl;
                 return nullptr;
             }
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected '='!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected '='!" <<endl;
             return nullptr;
         }    
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected identifier!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected identifier!" <<endl;
         return nullptr;
     }
 
@@ -589,13 +590,13 @@ AST_print *Parser::parse_print(){
     AST_node_expression *expr;
 
     //getting the expression
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //parsing expression
     expr = parse_expression();
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //if ; is found
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ";"){
@@ -603,7 +604,7 @@ AST_print *Parser::parse_print(){
         return new AST_print(expr);
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ';'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ';'!" <<endl;
         return nullptr;
     }
 }
@@ -614,39 +615,39 @@ AST_if *Parser::parse_if(){
     AST_block *else_block;
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing expression
         expr = parse_expression();
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected '('!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected '('!" <<endl;
         return nullptr;
     }
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")"){
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing if block
         if_block = parse_block();
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
         return nullptr;
     }
 
-    if(lexer.see_next_token().lexeme == "else"){
+    if(lexer->see_next_token().lexeme == "else"){
         //consuming else token
-        lexer.return_next_token();
+        lexer->return_next_token();
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //parsing else block
         else_block = parse_block();
@@ -667,17 +668,17 @@ AST_for *Parser::parse_for(){
     AST_block *block;
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for (
     if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "(")){
         //if ( not found, returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected '('!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected '('!" <<endl;
         return nullptr;
     }
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for variable declaration
     if(current_tok.t_id == keyword_TOK && current_tok.lexeme == "let"){
@@ -691,22 +692,22 @@ AST_for *Parser::parse_for(){
         var_decl = new AST_variable_declaration(new AST_identifier(""), new AST_type(Type::None), new AST_int(-1));
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //parsing exoression
         expr = parse_expression();
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ';'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ';'!" <<endl;
         return nullptr;
     }
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();   
+    current_tok = lexer->return_next_token();   
     //checking for ;
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ";"){
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         if(current_tok.t_id == identifier_TOK){
             //parsing assignment
@@ -715,17 +716,17 @@ AST_for *Parser::parse_for(){
             assignment = new AST_assignment(new AST_identifier(""), new AST_int(-1));
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected identifier or ')'!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected identifier or ')'!" <<endl;
             return nullptr;
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ';'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ';'!" <<endl;
         return nullptr;
     }
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();   
+    current_tok = lexer->return_next_token();   
     //parsing block
     block = parse_block();
 
@@ -738,30 +739,30 @@ AST_while *Parser::parse_while(){
     AST_block *block;
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing expression
         expr = parse_expression();
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected '('!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected '('!" <<endl;
         return nullptr;
     }
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")"){
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
         //parsing block
         block = parse_block();
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
         return nullptr;
     }
 
@@ -773,13 +774,13 @@ AST_return *Parser::parse_return(){
     AST_node_expression *expr;
 
     //getting the expression
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //parsing expression
     expr = parse_expression();
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //if ; is found
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ";"){
@@ -787,7 +788,7 @@ AST_return *Parser::parse_return(){
         return new AST_return(expr);
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected ';'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected ';'!" <<endl;
         return nullptr;
     }
 }
@@ -799,18 +800,18 @@ AST_function_declaration *Parser::parse_function_decl(){
     AST_block *block;
 
     //getting the identifier after fn
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
     //parsing the identifier
     identifier = parse_identifier();
 
     //setting current_tok to be the next token
-    current_tok = lexer.return_next_token();
+    current_tok = lexer->return_next_token();
 
     //checking for (
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "("){
         vector<AST_formal_param*> *f_param = new vector<AST_formal_param*>;
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //checking for )
         if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")")){
@@ -818,11 +819,11 @@ AST_function_declaration *Parser::parse_function_decl(){
             parse_formal_params(f_param);
 
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
 
             if(!(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ")")){
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected ')'!" <<endl;
+                cout << "Error at line: " << lexer->line_index << ". Expected ')'!" <<endl;
                 return nullptr;
             }
         }
@@ -830,37 +831,37 @@ AST_function_declaration *Parser::parse_function_decl(){
         f_params = new AST_formal_params(f_param);
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //checking for -
         if(current_tok.t_id == additive_op_TOK && current_tok.lexeme == "-"){
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
             
             //checking for >
             if(current_tok.t_id == relational_op_TOK && current_tok.lexeme == ">"){
                 //setting current_tok to be the next token
-                current_tok = lexer.return_next_token();
+                current_tok = lexer->return_next_token();
                 //parsing type token
                 type = parse_type();
 
                 //setting current_tok to be the next token
-                current_tok = lexer.return_next_token();
+                current_tok = lexer->return_next_token();
                 //parsing block token
                 block = parse_block();
             }else{
                 //otherwise returning error
-                cout << "Error at line: " << lexer.line_index << ". Expected '>'!" <<endl;
+                cout << "Error at line: " << lexer->line_index << ". Expected '>'!" <<endl;
                 return nullptr;
             }
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected '-'!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected '-'!" <<endl;
             return nullptr;
         }
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected open bracket!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected open bracket!" <<endl;
         return nullptr;
     }
 
@@ -875,10 +876,10 @@ AST_block *Parser::parse_block(){
 
     if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == "{"){
         //getting the next token after '{'
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected '{'!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected '{'!" <<endl;
         return nullptr;
     }
 
@@ -888,7 +889,7 @@ AST_block *Parser::parse_block(){
         block->push_back(parse_statement());
         
         //getting the next statement block
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
     }
 
     //returning new block
@@ -915,7 +916,7 @@ AST_type *Parser::parse_type(){
             return new AST_type(Type::Char);
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected type!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected type!" <<endl;
             return nullptr;
         }
     }else if(current_tok.lexeme == ""){
@@ -923,7 +924,7 @@ AST_type *Parser::parse_type(){
         return new AST_type(Type::None);
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected type!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected type!" <<endl;
         return nullptr;
     }
 }
@@ -938,17 +939,17 @@ AST_formal_param *Parser::parse_formal_param(){
         identifier = parse_identifier();
 
         //setting current_tok to be the next token
-        current_tok = lexer.return_next_token();
+        current_tok = lexer->return_next_token();
 
         //if a semicolon is found
         if(current_tok.t_id == punctuation_TOK && current_tok.lexeme == ":"){
             //setting current_tok to be the next token
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
             //parsing the type
             type = parse_type();
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected semicolon!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected semicolon!" <<endl;
             return nullptr;
         }
 
@@ -956,7 +957,7 @@ AST_formal_param *Parser::parse_formal_param(){
         return new AST_formal_param(identifier, type);
     }else{
         //otherwise returning error
-        cout << "Error at line: " << lexer.line_index << ". Expected identifier!" <<endl;
+        cout << "Error at line: " << lexer->line_index << ". Expected identifier!" <<endl;
         return nullptr;
     }
 }
@@ -965,20 +966,20 @@ AST_formal_params *Parser::parse_formal_params(vector<AST_formal_param*> *f_para
     f_params->push_back(parse_formal_param());
 
     //if a comma is found then there are more formal parameters
-    if(lexer.see_next_token().lexeme == ","){
+    if(lexer->see_next_token().lexeme == ","){
         //consuming the comma
-        lexer.return_next_token();
+        lexer->return_next_token();
 
         //checking that the next token is not a close bracket
-        if(lexer.see_next_token().lexeme != ")"){
+        if(lexer->see_next_token().lexeme != ")"){
             //setting the current token to be the next formal parameter
-            current_tok = lexer.return_next_token();
+            current_tok = lexer->return_next_token();
             //recalling the parse_formal_params function to parse the remaining formal parameters
             parse_formal_params(f_params);
         
         }else{
             //otherwise returning error
-            cout << "Error at line: " << lexer.line_index << ". Expected formal parameter!" <<endl;
+            cout << "Error at line: " << lexer->line_index << ". Expected formal parameter!" <<endl;
             return nullptr;
         }
     }

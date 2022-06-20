@@ -52,7 +52,7 @@ using namespace std;
 class Parser{
     public:
         //constructor
-        Parser();
+        explicit Parser(Lexer *lexer);
 
         //class destructor
         ~Parser();
@@ -65,11 +65,9 @@ class Parser{
     
     private:
         Token current_tok;
-        Lexer lexer;
+        Lexer *lexer;
 
         vector<AST_node*> *AST;
-
-        vector<AST_node*> *parse_AST();
 
         AST_node_statement *parse_statement();
 
